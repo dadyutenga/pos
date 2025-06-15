@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,7 +34,9 @@ public class ProductService {
     }
 
     public List<Product> getLowStockProducts(int threshold) {
-        return productRepository.findByStockLessThan(threshold);
+        return getAllProducts().stream()
+            .filter(p -> p.getStock() <= threshold && p.getStock() > 0)
+            .collect(Collectors.toList());
     }
 
     public void updateStock(Long productId, int quantity) {
@@ -44,5 +48,32 @@ public class ProductService {
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public List<Product> getFilteredProducts(String search, BigDecimal minPrice, 
+                                           BigDecimal maxPrice, String stockFilter) {
+        List<Product> products = getAllProducts();
+
+        // Apply filters
+        return products.stream()
+            .filter(p -> search == null || search.isEmpty() || 
+                        p.getName().toLowerCase().contains(search.toLowerCase()) ||
+                        (p.getDescription() != null && 
+                         p.getDescription().toLowerCase().contains(search.toLowerCase())))
+            .filter(p -> minPrice == null || p.getPrice().compareTo(minPrice) >= 0)
+            .filter(p -> maxPrice == null || p.getPrice().compareTo(maxPrice) <= 0)
+            .filter(p -> filterByStock(p, stockFilter))
+            .collect(Collectors.toList());
+    }
+
+    private boolean filterByStock(Product product, String stockFilter) {
+        if (stockFilter == null || stockFilter.isEmpty()) return true;
+        
+        return switch (stockFilter) {
+            case "low" -> product.getStock() <= 5 && product.getStock() > 0;
+            case "out" -> product.getStock() == 0;
+            case "available" -> product.getStock() > 5;
+            default -> true;
+        };
     }
 } 
