@@ -14,10 +14,23 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/products">Products</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/sales">Sales</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="salesDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Sales
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="salesDropdown">
+                            <li><a class="dropdown-item" href="/sales">New Sale</a></li>
+                            <li><a class="dropdown-item" href="/sales/history">Sales History</a></li>
+                        </ul>
                     </li>
                 </ul>
+                <!-- Add a direct link to history as well -->
+                <div class="d-flex">
+                    <a href="/sales/history" class="btn btn-outline-light">
+                        <i class="bi bi-clock-history"></i> Sales History
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
