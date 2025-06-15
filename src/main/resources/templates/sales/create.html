@@ -1,267 +1,533 @@
 <!DOCTYPE html>
+
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
+
     <title>New Sale - POS System</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
+
 <body>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
         <div class="container">
+
             <a class="navbar-brand" href="/dashboard">POS System</a>
+
             <div class="collapse navbar-collapse">
+
                 <ul class="navbar-nav me-auto">
+
                     <li class="nav-item">
+
                         <a class="nav-link" href="/products">Products</a>
+
                     </li>
+
                     <li class="nav-item dropdown">
+
                         <a class="nav-link dropdown-toggle active" href="#" id="salesDropdown" role="button" 
+
                            data-bs-toggle="dropdown" aria-expanded="false">
+
                             Sales
+
                         </a>
+
                         <ul class="dropdown-menu" aria-labelledby="salesDropdown">
+
                             <li><a class="dropdown-item" href="/sales">New Sale</a></li>
+
                             <li><a class="dropdown-item" href="/sales/history">Sales History</a></li>
+
                         </ul>
+
                     </li>
+
                 </ul>
+
                 <!-- Add a direct link to history as well -->
+
                 <div class="d-flex">
+
                     <a href="/sales/history" class="btn btn-outline-light">
+
                         <i class="bi bi-clock-history"></i> Sales History
+
                     </a>
+
                 </div>
+
             </div>
+
         </div>
+
     </nav>
 
+
+
     <div class="container mt-4">
+
         <div class="row">
+
             <!-- Product Selection -->
+
             <div class="col-md-8">
+
                 <div class="card">
+
                     <div class="card-header">
+
                         <h5 class="card-title mb-0">Available Products</h5>
+
                     </div>
+
                     <div class="card-body">
+
                         <div class="mb-3">
+
                             <input type="text" id="productSearch" class="form-control" 
+
                                    placeholder="Search products...">
+
                         </div>
+
                         <div class="row" id="productGrid">
+
                             <div th:each="product : ${products}" class="col-md-4 mb-3">
+
                                 <div class="card h-100">
+
                                     <div class="card-body">
+
                                         <h6 class="card-title" th:text="${product.name}"></h6>
+
                                         <p class="card-text">
+
                                             <strong>Price:</strong> 
+
                                             <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' TZS'}"></span>
+
                                         </p>
+
                                         <p class="card-text">
+
                                             <strong>Stock:</strong> 
+
                                             <span th:text="${product.stock}"></span>
+
                                         </p>
+
                                         <button type="button" class="btn btn-primary btn-sm w-100"
+
                                                 th:onclick="'addToCart(' + ${product.id} + ')'"
+
                                                 th:disabled="${product.stock <= 0}">
+
                                             Add to Cart
+
                                         </button>
+
                                     </div>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Shopping Cart -->
+
             <div class="col-md-4">
+
                 <div class="card">
+
                     <div class="card-header">
+
                         <h5 class="card-title mb-0">Shopping Cart</h5>
+
                     </div>
+
                     <div class="card-body">
+
                         <div id="cartItems">
+
                             <!-- Cart items will be added here dynamically -->
+
                         </div>
+
                         <div class="border-top pt-3 mt-3">
+
                             <h5>Total: <span id="totalAmount">0 TZS</span></h5>
+
                         </div>
+
                         <div class="border-top pt-3 mt-3">
+
                             <h5>Payment Method</h5>
+
                             <div class="mb-3">
+
                                 <select id="paymentMethod" class="form-select">
+
                                     <option value="CASH">Cash</option>
+
                                     <option value="CARD">Card</option>
+
                                     <option value="MOBILE_MONEY">Mobile Money</option>
+
                                 </select>
+
                             </div>
+
                             <div id="paymentReferenceDiv" class="mb-3 d-none">
+
                                 <input type="text" id="paymentReference" class="form-control" 
+
                                        placeholder="Enter payment reference">
+
                             </div>
+
                         </div>
+
                         <button type="button" class="btn btn-success w-100 mt-3" id="checkoutBtn" onclick="completeSale()" disabled>
+
                             Complete Sale
+
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
+
+
     <script>
+
         let cart = [];
+
         let total = 0;
 
+
+
         function addToCart(productId) {
+
             fetch(`/sales/product/${productId}`)
+
                 .then(response => response.json())
+
                 .then(product => {
+
                     const existingItem = cart.find(item => item.productId === product.id);
+
                     if (existingItem) {
+
                         if (existingItem.quantity < product.stock) {
+
                             existingItem.quantity++;
+
                             updateCart();
+
                         } else {
+
                             alert('Not enough stock!');
+
                         }
+
                     } else {
+
                         cart.push({
+
                             productId: product.id,
+
                             name: product.name,
+
                             price: product.price,
+
                             quantity: 1
+
                         });
+
                         updateCart();
+
                     }
+
                 });
+
         }
+
+
 
         function removeFromCart(index) {
+
             cart.splice(index, 1);
+
             updateCart();
+
         }
+
+
 
         function updateQuantity(index, delta) {
+
             const item = cart[index];
+
             const newQuantity = item.quantity + delta;
+
             
+
             fetch(`/sales/product/${item.productId}`)
+
                 .then(response => response.json())
+
                 .then(product => {
+
                     if (newQuantity > 0 && newQuantity <= product.stock) {
+
                         item.quantity = newQuantity;
+
                         updateCart();
+
                     }
+
                 });
+
         }
+
+
 
         function updateCart() {
+
             const cartDiv = document.getElementById('cartItems');
+
             cartDiv.innerHTML = '';
+
             total = 0;
 
+
+
             cart.forEach((item, index) => {
+
                 total += item.price * item.quantity;
+
                 
+
                 const itemDiv = document.createElement('div');
+
                 itemDiv.className = 'card mb-2';
+
                 itemDiv.innerHTML = `
+
                     <div class="card-body p-2">
+
                         <h6 class="card-title mb-1">${item.name}</h6>
+
                         <div class="d-flex justify-content-between align-items-center">
+
                             <div class="btn-group btn-group-sm">
+
                                 <button type="button" class="btn btn-outline-secondary" 
+
                                         onclick="updateQuantity(${index}, -1)">-</button>
+
                                 <button type="button" class="btn btn-outline-secondary" disabled>
+
                                     ${item.quantity}
+
                                 </button>
+
                                 <button type="button" class="btn btn-outline-secondary" 
+
                                         onclick="updateQuantity(${index}, 1)">+</button>
+
                             </div>
+
                             <span>${(item.price * item.quantity).toLocaleString()} TZS</span>
+
                             <button type="button" class="btn btn-danger btn-sm" 
+
                                     onclick="removeFromCart(${index})">
+
                                 <i class="bi bi-trash"></i>
+
                             </button>
+
                         </div>
+
                     </div>
+
                 `;
+
                 cartDiv.appendChild(itemDiv);
+
             });
+
+
 
             document.getElementById('totalAmount').textContent = total.toLocaleString() + ' TZS';
+
             document.getElementById('checkoutBtn').disabled = cart.length === 0;
+
         }
+
+
 
         // Product search functionality
+
         document.getElementById('productSearch').addEventListener('input', function(e) {
+
             const search = e.target.value.toLowerCase();
+
             document.querySelectorAll('#productGrid .card').forEach(card => {
+
                 const productName = card.querySelector('.card-title').textContent.toLowerCase();
+
                 card.closest('.col-md-4').style.display = 
+
                     productName.includes(search) ? 'block' : 'none';
+
             });
+
         });
+
+
 
         document.getElementById('paymentMethod').addEventListener('change', function() {
+
             const referenceDiv = document.getElementById('paymentReferenceDiv');
+
             referenceDiv.classList.toggle('d-none', this.value === 'CASH');
+
         });
 
+
+
         function completeSale() {
+
             if (cart.length === 0) {
+
                 alert('Cart is empty!');
+
                 return;
+
             }
+
+
 
             const paymentMethod = document.getElementById('paymentMethod').value;
+
             const paymentReference = document.getElementById('paymentReference').value;
 
+
+
             if (paymentMethod !== 'CASH' && !paymentReference) {
+
                 alert('Payment reference is required for card or mobile money payments');
+
                 return;
+
             }
 
+
+
             const saleData = {
+
                 items: cart.map(item => ({
+
                     product: { id: item.productId },
+
                     quantity: item.quantity,
+
                     unitPrice: item.price
+
                 })),
+
                 paymentMethod: paymentMethod,
+
                 paymentReference: paymentReference
+
             };
 
+
+
             // Add CSRF token if needed
+
             const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+
             const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
 
+
+
             fetch('/sales/create', {
+
                 method: 'POST',
+
                 headers: {
+
                     'Content-Type': 'application/json',
+
                     ...(token && header && { [header]: token })
+
                 },
+
                 body: JSON.stringify(saleData)
+
             })
+
             .then(response => {
+
                 if (!response.ok) {
+
                     return response.text().then(text => {
+
                         throw new Error(text || 'Sale failed');
+
                     });
+
                 }
+
                 return response.json();
+
             })
+
             .then(sale => {
+
                 window.location.href = `/sales/receipt/${sale.id}`;
+
             })
+
             .catch(error => {
+
                 alert('Error creating sale: ' + error.message);
+
                 console.error('Sale error:', error);
+
             });
+
         }
+
     </script>
+
 </body>
+
 </html> 
