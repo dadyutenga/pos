@@ -20,11 +20,11 @@ public class Sale {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaleItem> items = new ArrayList<>();
+
     @Column(nullable = false)
     private BigDecimal totalAmount;
-
-    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
-    private List<SaleItem> items = new ArrayList<>();
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -36,9 +36,9 @@ public class Sale {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
-
     public List<SaleItem> getItems() { return items; }
     public void setItems(List<SaleItem> items) { this.items = items; }
+
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 }

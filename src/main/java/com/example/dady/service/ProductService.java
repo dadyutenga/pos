@@ -25,6 +25,10 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    public List<Product> getAvailableProducts() {
+        return productRepository.findByStockGreaterThan(0);
+    }
+
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
@@ -39,9 +43,14 @@ public class ProductService {
             .collect(Collectors.toList());
     }
 
-    public void updateStock(Long productId, int quantity) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+    public void updateProductStock(Long productId, int quantity) {
+        Product product = getProductById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Insufficient stock for product: " + product.getName());
+        }
+        
         product.setStock(product.getStock() - quantity);
         productRepository.save(product);
     }

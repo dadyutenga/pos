@@ -3,8 +3,11 @@ package com.example.dady.service;
 import com.example.dady.model.Sale;
 import com.example.dady.model.SaleItem;
 import com.example.dady.model.Product;
+import com.example.dady.model.User;
 import com.example.dady.repository.SaleRepository;
+import com.example.dady.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,20 +25,48 @@ public class SaleService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    public List<Sale> getAllSales() {
+        return saleRepository.findAll();
+    }
+
+    @Transactional
     public Sale createSale(Sale sale) {
-        // Calculate total amount
-        BigDecimal total = BigDecimal.ZERO;
-        for (SaleItem item : sale.getItems()) {
-            item.setSale(sale);
-            item.setSubtotal(item.getUnitPrice().multiply(new BigDecimal(item.getQuantity())));
-            total = total.add(item.getSubtotal());
-            
-            // Update product stock
-            productService.updateStock(item.getProduct().getId(), item.getQuantity());
-        }
-        sale.setTotalAmount(total);
+        // Get current user
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         sale.setDateTime(LocalDateTime.now());
-        
+        sale.setUser(user);
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for (SaleItem item : sale.getItems()) {
+            Product product = productService.getProductById(item.getProduct().getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            // Validate stock
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+
+            // Set item details
+            item.setProduct(product);
+            item.setUnitPrice(product.getPrice());
+            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            item.setSale(sale);
+
+            // Update total
+            totalAmount = totalAmount.add(item.getSubtotal());
+
+            // Update product stock
+            product.setStock(product.getStock() - item.getQuantity());
+            productService.saveProduct(product);
+        }
+
+        sale.setTotalAmount(totalAmount);
         return saleRepository.save(sale);
     }
 

@@ -2,6 +2,7 @@ package com.example.dady.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "sale_items")
@@ -11,7 +12,8 @@ public class SaleItem {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "sale_id", nullable = false)
+    @JoinColumn(name = "sale_id")
+    @JsonIgnore
     private Sale sale;
 
     @ManyToOne
