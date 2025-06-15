@@ -7,11 +7,12 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    // Find products by name containing the search term (case-insensitive)
-    List<Product> findByNameContainingIgnoreCase(String name);
+    // Find products with stock less than given amount, ordered by stock ascending
+    List<Product> findByStockLessThanOrderByStockAsc(Integer threshold);
     
-    // Find products with stock less than specified amount
-    List<Product> findByStockLessThan(Integer stockThreshold);
-
-    List<Product> findByStockGreaterThan(int stock);
+    // Find products with stock greater than zero
+    List<Product> findByStockGreaterThan(Integer stock);
+    
+    // Find by name containing (for search)
+    List<Product> findByNameContainingIgnoreCase(String name);
 } 
