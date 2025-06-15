@@ -13,7 +13,7 @@
                         <h3 class="text-center">Register</h3>
                     </div>
                     <div class="card-body">
-                        <form th:action="@{/auth/register}" th:object="${user}" method="post">
+                        <form th:action="@{/register}" th:object="${user}" method="post">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="username" th:field="*{username}" required>
@@ -31,7 +31,7 @@
                             </div>
                         </form>
                         <div class="text-center mt-3">
-                            <a th:href="@{/auth/login}" class="text-decoration-none">Already have an account? Login here</a>
+                            <a th:href="@{/login}" class="text-decoration-none">Already have an account? Login here</a>
                         </div>
                     </div>
                 </div>
