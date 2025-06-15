@@ -12,10 +12,10 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/products">Products</a>
+                        <a class="nav-link" href="/sales">New Sale</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/sales">Sales</a>
+                        <a class="nav-link active" href="/sales/history">Sales History</a>
                     </li>
                 </ul>
             </div>
@@ -23,44 +23,38 @@
     </nav>
 
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Sales History</h2>
-            <a href="/sales" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> New Sale
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Sale ID</th>
-                            <th>Date</th>
-                            <th>Cashier</th>
-                            <th>Items</th>
-                            <th>Total Amount</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="sale : ${sales}">
-                            <td th:text="${sale.id}"></td>
-                            <td th:text="${#temporals.format(sale.dateTime, 'dd-MM-yyyy HH:mm')}"></td>
-                            <td th:text="${sale.user.fullName}"></td>
-                            <td th:text="${sale.items.size() + ' items'}"></td>
-                            <td th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 0, 'POINT') + ' TZS'}"></td>
-                            <td>
-                                <a th:href="@{/sales/receipt/{id}(id=${sale.id})}" 
-                                   class="btn btn-sm btn-info">
-                                    <i class="bi bi-receipt"></i> Receipt
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <h2>Sales History</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total (TZS)</th>
+                        <th>Payment Method</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="sale : ${sales}">
+                        <td th:text="${sale.id}"></td>
+                        <td th:text="${#temporals.format(sale.dateTime, 'dd-MM-yyyy HH:mm')}"></td>
+                        <td th:text="${sale.items.size()}"></td>
+                        <td th:text="${#numbers.formatDecimal(sale.totalAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td th:text="${sale.paymentMethod}"></td>
+                        <td>
+                            <a th:href="@{'/sales/' + ${sale.id} + '/receipt'}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-receipt"></i> Receipt
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

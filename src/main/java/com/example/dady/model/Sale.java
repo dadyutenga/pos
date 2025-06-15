@@ -26,6 +26,15 @@ public class Sale {
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
+    @Column(nullable = false)
+    private String paymentMethod;
+
+    @Column(length = 100)
+    private String paymentReference;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -41,4 +50,13 @@ public class Sale {
 
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getPaymentReference() { return paymentReference; }
+    public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

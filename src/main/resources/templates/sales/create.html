@@ -87,6 +87,20 @@
                         <div class="border-top pt-3 mt-3">
                             <h5>Total: <span id="totalAmount">0 TZS</span></h5>
                         </div>
+                        <div class="border-top pt-3 mt-3">
+                            <h5>Payment Method</h5>
+                            <div class="mb-3">
+                                <select id="paymentMethod" class="form-select">
+                                    <option value="CASH">Cash</option>
+                                    <option value="CARD">Card</option>
+                                    <option value="MOBILE_MONEY">Mobile Money</option>
+                                </select>
+                            </div>
+                            <div id="paymentReferenceDiv" class="mb-3 d-none">
+                                <input type="text" id="paymentReference" class="form-control" 
+                                       placeholder="Enter payment reference">
+                            </div>
+                        </div>
                         <button type="button" class="btn btn-success w-100 mt-3" id="checkoutBtn" onclick="completeSale()" disabled>
                             Complete Sale
                         </button>
@@ -191,9 +205,22 @@
             });
         });
 
+        document.getElementById('paymentMethod').addEventListener('change', function() {
+            const referenceDiv = document.getElementById('paymentReferenceDiv');
+            referenceDiv.classList.toggle('d-none', this.value === 'CASH');
+        });
+
         function completeSale() {
             if (cart.length === 0) {
                 alert('Cart is empty!');
+                return;
+            }
+
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const paymentReference = document.getElementById('paymentReference').value;
+
+            if (paymentMethod !== 'CASH' && !paymentReference) {
+                alert('Payment reference is required for card or mobile money payments');
                 return;
             }
 
@@ -202,7 +229,9 @@
                     product: { id: item.productId },
                     quantity: item.quantity,
                     unitPrice: item.price
-                }))
+                })),
+                paymentMethod: paymentMethod,
+                paymentReference: paymentReference
             };
 
             // Add CSRF token if needed

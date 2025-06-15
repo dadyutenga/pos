@@ -67,7 +67,19 @@ public class SalesController {
 
     @GetMapping("/history")
     public String showSalesHistory(Model model) {
-        model.addAttribute("sales", saleService.getAllSales());
+        List<Sale> sales = saleService.getAllSales();
+        model.addAttribute("sales", sales);
         return "sales/history";
+    }
+
+    @PostMapping("/{id}/cancel")
+    @ResponseBody
+    public String cancelSale(@PathVariable Long id) {
+        try {
+            saleService.cancelSale(id);
+            return "Success";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 } 
